@@ -1,48 +1,76 @@
 import { Injectable } from '@angular/core';
 import { BookmarkedMediaDictionary } from '@core/interfaces';
-import { Observable, tap } from 'rxjs';
+import { BookmarkedFilmsQuery } from '@features/film/stores/bookmarked-films.query';
+import { BookmarkedFilmsStore } from '@features/film/stores/bookmarked-films.store';
+import { Observable, of, tap } from 'rxjs';
 import { BookmarkEnum } from '../../bookmark';
 import { BookmarkedFilmsApi } from '../api';
-import { BookmarkedFilmsState } from '../states';
 
 @Injectable({
     providedIn: 'root'
 })
 export class BookmarkedFilmsService {
-    public readonly data$ = this.bookmarkedFilmsState.data$;
-    public readonly data = this.bookmarkedFilmsState.data;
+
+    public readonly data$ = this.bookmarkedFilmsQuery.select(x => x.bookmarks || {});
 
     constructor(
         private readonly bookmarkedFilmsApi: BookmarkedFilmsApi,
-        private readonly bookmarkedFilmsState: BookmarkedFilmsState
-    ) {}
+        private readonly bookmarkedFilmsStore: BookmarkedFilmsStore,
+        private readonly bookmarkedFilmsQuery: BookmarkedFilmsQuery
+    ) {
+    }
 
     public updateDictionary(): Observable<BookmarkedMediaDictionary> {
         return this.bookmarkedFilmsApi.getAsDictionary()
             .pipe(
-                tap((data) => this.bookmarkedFilmsState.set(data))
+                tap((data) => this.bookmarkedFilmsStore.update(data))
             );
     }
 
     public updateDictionaryIfAbsent(): Observable<BookmarkedMediaDictionary> {
-        if (!this.bookmarkedFilmsState.data) {
+        if (!this.bookmarkedFilmsStore.getValue()) {
             return this.updateDictionary();
         }
 
-        return this.data$ as Observable<BookmarkedMediaDictionary>;
+        return of(this.bookmarkedFilmsStore.getValue().bookmarks || {});
     }
 
     public add(kinopoiskId: string, bookmarkId: BookmarkEnum): Observable<unknown> {
+      debugger;
         return this.bookmarkedFilmsApi.add(kinopoiskId, bookmarkId)
             .pipe(
-                tap(() => this.bookmarkedFilmsState.add(kinopoiskId, bookmarkId))
+                tap(() => {
+
+                  // TODO: partial state updates are supported BUT original implementation with 'null' is not
+                  // compatible with the Akita way. Therefore a bit more code is required.
+
+                  const allBookmarks = {...(this.bookmarkedFilmsStore.getValue().bookmarks || {})};
+
+                  allBookmarks[kinopoiskId] = [...(allBookmarks[kinopoiskId] || []), bookmarkId];
+
+                  this.bookmarkedFilmsStore.update({bookmarks: allBookmarks});
+                })
             );
     }
 
     public remove(kinopoiskId: string, bookmarkId: BookmarkEnum): Observable<unknown> {
+      debugger;
         return this.bookmarkedFilmsApi.remove(kinopoiskId, bookmarkId)
             .pipe(
-                tap(() => this.bookmarkedFilmsState.remove(kinopoiskId, bookmarkId))
+                tap(() => {
+                  // TODO: partial state updates are supported BUT original implementation with 'null' is not
+                  // compatible with the Akita way. Therefore a bit more code is required.
+
+                  const allBookmarks = {...(this.bookmarkedFilmsStore.getValue().bookmarks || {})};
+                  const userBookmarks = allBookmarks[kinopoiskId];
+
+                  if (userBookmarks) {
+                    allBookmarks[kinopoiskId] = userBookmarks.filter(b => b !== bookmarkId);
+
+                    this.bookmarkedFilmsStore.update({bookmarks: allBookmarks});
+                  }
+
+                })
             );
     }
 }
