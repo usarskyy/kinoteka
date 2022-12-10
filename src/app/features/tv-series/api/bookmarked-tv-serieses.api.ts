@@ -1,26 +1,41 @@
 import { Injectable } from '@angular/core';
 import { BookmarkedMediaDictionary } from '@core/interfaces';
-import { ApiService } from '@core/services';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { BookmarkEnum } from '../../bookmark';
 
 @Injectable({
     providedIn: 'root'
 })
 export class BookmarkedTvSeriesesApi {
-    constructor(
-        private readonly apiService: ApiService
-    ) {}
+
+    private readonly data$ = new BehaviorSubject<BookmarkedMediaDictionary>({});
 
     public getAsDictionary(): Observable<BookmarkedMediaDictionary> {
-        return this.apiService.get<BookmarkedMediaDictionary>(`/bookmarked-tv-serieses/dictionary`);
+        return this.data$;
     }
 
     public add(videoId: string, bookmarkId: BookmarkEnum): Observable<unknown> {
-        return this.apiService.post(`/bookmarked-tv-serieses/${videoId}`, { data: bookmarkId });
+
+        const newValue = {...this.data$.value};
+
+        newValue[videoId] = newValue[videoId] ? [...newValue[videoId], bookmarkId] : [bookmarkId];
+
+        this.data$.next(newValue);
+
+        return of(true);
     }
 
     public remove(videoId: string, bookmarkId: BookmarkEnum): Observable<unknown> {
-        return this.apiService.delete(`/bookmarked-tv-serieses/${videoId}/${bookmarkId}`);
+
+        const newValue = {...this.data$.value};
+        const existingVideoBookmarks = newValue[videoId] || [];
+
+        if (existingVideoBookmarks) {
+          newValue[videoId] = existingVideoBookmarks.filter(b => b != bookmarkId);
+        }
+
+        this.data$.next(newValue);
+
+        return of(true);
     }
 }
