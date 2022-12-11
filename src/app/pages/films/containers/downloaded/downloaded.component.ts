@@ -3,10 +3,11 @@ import { Router } from '@angular/router';
 import { AppRouteEnum } from '@core/enums';
 import { BookmarkedMediaDictionary } from '@core/interfaces';
 import { DestroyService } from '@core/services';
-import { BookmarkedFilmsService, DownloadedFilm, DownloadedFilmsService, DOWNLOADED_FILM_PREVIEW_LOADER, FilteredDownloadedFilmsService } from '@features/film';
-import { BookmarkedFilmsQuery } from '@features/film/stores/bookmarked-films.query';
+import { DownloadedFilm, DownloadedFilmsService, DOWNLOADED_FILM_PREVIEW_LOADER, FilteredDownloadedFilmsService } from '@features/film';
+import { selectAllBookmarksNotNull } from '@features/film/stores/bookmarked-films.selectors';
 import { DownloadingMediaSocketService, MediaTypeEnum } from '@features/media';
 import { ContentZoneService, HeaderService } from '@layouts';
+import { Store } from '@ngrx/store';
 import { WatchRoutingEnum } from '@pages/watch/enums';
 import { filter, merge, Observable, switchMap, takeUntil } from 'rxjs';
 import { DownloadedFilmPreviewLoaderService } from './downloaded-film-preview-loader.service';
@@ -28,7 +29,7 @@ import { HeaderPortalContentComponent } from './header-portal-content';
 export class DownloadedComponent implements OnInit, OnDestroy {
     public filteredFilms$!: Observable<DownloadedFilm[]>;
     public allDownloadedFilms$!: Observable<DownloadedFilm[] | null>;
-    public bookmarkedFilmsDictionary$: Observable<BookmarkedMediaDictionary> = this.bookmarkedFilmsQuery.bookmarksNotNull$;
+    public bookmarkedFilmsDictionary$: Observable<BookmarkedMediaDictionary> = this.store.select(selectAllBookmarksNotNull);
 
     constructor(
         @Inject(DestroyService) private readonly viewDestroyed$: Observable<void>,
@@ -37,7 +38,7 @@ export class DownloadedComponent implements OnInit, OnDestroy {
         private readonly contentZoneService: ContentZoneService,
         private readonly downloadingMediaSocketService: DownloadingMediaSocketService,
         private readonly downloadedFilmsService: DownloadedFilmsService,
-        private readonly bookmarkedFilmsQuery: BookmarkedFilmsQuery,
+        private readonly store: Store,
         private readonly filteredDownloadedFilmsService: FilteredDownloadedFilmsService,
     ) {}
 

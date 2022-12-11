@@ -5,6 +5,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CastManagerModule, MediaDownloadManagerModule } from '@components';
 import { LayoutsModule } from '@layouts';
+import { StoreModule } from '@ngrx/store';
 import { SharedModule } from '@shared';
 import {
     NgxBaseStateDevtoolsConfig,
@@ -29,7 +30,9 @@ import { AppRoutingModule } from './app.routing';
         LayoutsModule,
 
         CastManagerModule,
-        MediaDownloadManagerModule
+        MediaDownloadManagerModule,
+
+        StoreModule.forRoot({}),
     ],
     providers: [
         {

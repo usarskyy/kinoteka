@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core';
-import { BookmarkedMediaDictionary } from '@core/interfaces';
 import { DestroyService } from '@core/services';
 import { Bookmark, BookmarkEnum } from '@features/bookmark';
 import { BookmarkedFilmsService } from '@features/film';
-import { BookmarkedFilmsQuery } from '@features/film/stores/bookmarked-films.query';
+import { selectAllBookmarksNotNull } from '@features/film/stores/bookmarked-films.selectors';
+import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { filter, map, takeUntil } from 'rxjs/operators';
+import { map, takeUntil } from 'rxjs/operators';
 import { OpenedFilmState } from '../../states';
 
 @Component({
@@ -24,7 +24,7 @@ export class BookmarkButtonComponent implements OnInit {
         @Inject(DestroyService) private readonly viewDestroyed$: Observable<boolean>,
         private readonly openedFilmState: OpenedFilmState,
         private readonly bookmarkedFilmsService: BookmarkedFilmsService,
-        private readonly bookmarkedFilmsQuery: BookmarkedFilmsQuery,
+        private readonly store: Store,
     ) {}
 
     public ngOnInit(): void {
@@ -51,9 +51,8 @@ export class BookmarkButtonComponent implements OnInit {
     }
 
     private initBookmarksObservable(): void {
-        this.bookmarks$ = this.bookmarkedFilmsQuery.bookmarks$
+        this.bookmarks$ = this.store.select(selectAllBookmarksNotNull)
             .pipe(
-                filter((data): data is BookmarkedMediaDictionary => !!data),
                 map((dictionary) => (dictionary[this.openedFilmState.data!.kinopoiskId] ?? []))
             );
     }
