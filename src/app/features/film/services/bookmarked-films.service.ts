@@ -36,17 +36,7 @@ export class BookmarkedFilmsService {
       debugger;
         return this.bookmarkedFilmsApi.add(kinopoiskId, bookmarkId)
             .pipe(
-                tap(() => {
-
-                  // TODO: partial state updates are supported BUT original implementation with 'null' is not
-                  // compatible with the Akita way. Therefore a bit more code is required.
-
-                  const allBookmarks = {...(this.bookmarkedFilmsStore.getValue().bookmarks || {})};
-
-                  allBookmarks[kinopoiskId] = [...(allBookmarks[kinopoiskId] || []), bookmarkId];
-
-                  this.bookmarkedFilmsStore.update({bookmarks: allBookmarks});
-                })
+                tap(() => this.bookmarkedFilmsStore.add(kinopoiskId, bookmarkId)),
             );
     }
 
@@ -54,20 +44,7 @@ export class BookmarkedFilmsService {
       debugger;
         return this.bookmarkedFilmsApi.remove(kinopoiskId, bookmarkId)
             .pipe(
-                tap(() => {
-                  // TODO: partial state updates are supported BUT original implementation with 'null' is not
-                  // compatible with the Akita way. Therefore a bit more code is required.
-
-                  const allBookmarks = {...(this.bookmarkedFilmsStore.getValue().bookmarks || {})};
-                  const userBookmarks = allBookmarks[kinopoiskId];
-
-                  if (userBookmarks) {
-                    allBookmarks[kinopoiskId] = userBookmarks.filter(b => b !== bookmarkId);
-
-                    this.bookmarkedFilmsStore.update({bookmarks: allBookmarks});
-                  }
-
-                })
+                tap(() => this.bookmarkedFilmsStore.remove(kinopoiskId, bookmarkId)),
             );
     }
 }
