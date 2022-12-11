@@ -3,8 +3,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AppRouteEnum } from '@core/enums';
 import { BookmarkedMediaDictionary } from '@core/interfaces';
 import { Film, PlaylistFilmsService } from '@features/film';
-import { BookmarkedFilmsQuery } from '@features/film/stores/bookmarked-films.query';
+import { selectAllBookmarks } from '@features/film/stores/bookmarked-films.selectors';
 import { HeaderService } from '@layouts';
+import { Store } from '@ngrx/store';
 import { WatchRoutingEnum } from '@pages/watch/enums';
 import { Observable } from 'rxjs';
 import { HeaderPortalContentComponent } from './components';
@@ -18,7 +19,7 @@ import { PlaylistFilmsParamEnum } from './enums';
 })
 export class PlaylistFilmsComponent implements OnInit, OnDestroy {
     public films$!: Observable<Film[] | null>;
-    public bookmarkedFilmsDictionary$: Observable<BookmarkedMediaDictionary | null> = this.bookmarkedFilmsQuery.bookmarks$;
+    public bookmarkedFilmsDictionary$: Observable<BookmarkedMediaDictionary | null> = this.store.select(selectAllBookmarks);
 
     constructor(
         private readonly injector: Injector,
@@ -26,7 +27,7 @@ export class PlaylistFilmsComponent implements OnInit, OnDestroy {
         private readonly activatedRoute: ActivatedRoute,
         private readonly headerService: HeaderService,
         private readonly playlistFilmsService: PlaylistFilmsService,
-        private readonly bookmarkedFilmsQuery: BookmarkedFilmsQuery,
+        private readonly store: Store,
     ) {}
 
     public ngOnInit(): void {

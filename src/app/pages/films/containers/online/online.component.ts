@@ -4,9 +4,10 @@ import { AppRouteEnum } from '@core/enums';
 import { BookmarkedMediaDictionary } from '@core/interfaces';
 import { DestroyService } from '@core/services';
 import { Film, OnlineFilmsFiltersService, OnlineFilmsService } from '@features/film';
-import { BookmarkedFilmsQuery } from '@features/film/stores/bookmarked-films.query';
+import { selectAllBookmarks } from '@features/film/stores/bookmarked-films.selectors';
 import { VideoCdnResponse } from '@features/video-cdn';
 import { ContentZoneService, HeaderService } from '@layouts';
+import { Store } from '@ngrx/store';
 import { WatchRoutingEnum } from '@pages/watch/enums';
 import { merge, Observable, skip, takeUntil } from 'rxjs';
 import { HeaderPortalContentComponent } from './header-portal-content';
@@ -23,7 +24,7 @@ import { HeaderPortalContentComponent } from './header-portal-content';
 export class OnlineComponent implements OnInit {
     public filmsResponse: VideoCdnResponse<Film> | null = null;
 
-    public bookmarkedFilmsDictionary$: Observable<BookmarkedMediaDictionary | null> = this.bookmarkedFilmsQuery.bookmarks$;
+    public bookmarkedFilmsDictionary$: Observable<BookmarkedMediaDictionary | null> = this.store.select(selectAllBookmarks);
 
     private get viewDestroyedOrFiltersChanged$(): Observable<unknown> {
         return merge(
@@ -40,7 +41,7 @@ export class OnlineComponent implements OnInit {
         private readonly headerService: HeaderService,
         private readonly filmsService: OnlineFilmsService,
         private readonly filmsFiltersService: OnlineFilmsFiltersService,
-        private readonly bookmarkedFilmsQuery: BookmarkedFilmsQuery,
+        private readonly store: Store,
         private readonly changeDetector: ChangeDetectorRef
     ) {}
 

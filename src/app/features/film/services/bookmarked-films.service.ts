@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { BookmarkedMediaDictionary } from '@core/interfaces';
-import { BookmarkedFilmsStore } from '@features/film/stores/bookmarked-films.store';
-import { Observable, of, tap } from 'rxjs';
+import { bookmarkAddedAction, bookmarkRemovedAction, bookmarksLoadedAction } from '@features/film/stores/bookmarked-films.actions';
+import { selectAllBookmarks, selectAllBookmarksNotNull } from '@features/film/stores/bookmarked-films.selectors';
+import { Store } from '@ngrx/store';
+import { first, Observable, switchMap, tap } from 'rxjs';
 import { BookmarkEnum } from '../../bookmark';
 import { BookmarkedFilmsApi } from '../api';
 
@@ -12,7 +14,7 @@ export class BookmarkedFilmsService {
 
     constructor(
         private readonly bookmarkedFilmsApi: BookmarkedFilmsApi,
-        private readonly bookmarkedFilmsStore: BookmarkedFilmsStore
+        private readonly store: Store,
     ) {
     }
 
@@ -20,23 +22,38 @@ export class BookmarkedFilmsService {
       return this.bookmarkedFilmsApi
                  .getAsDictionary()
                  .pipe(
-                   tap((data) => this.bookmarkedFilmsStore.update({bookmarks: data}))
+                   tap((data) => this.store.dispatch(bookmarksLoadedAction(data)))
                  );
     }
 
     public updateDictionaryIfAbsent(): Observable<BookmarkedMediaDictionary> {
-        if (!this.bookmarkedFilmsStore.getValue().bookmarks) {
-            return this.updateDictionary();
-        }
+        // A small bonus from NGRX: you can't simply write synchronous code :) you have to use observables.
+        // So, the following code must be re-written properly:
+        //     if (!this.bookmarkedFilmsStore.getValue().bookmarks) {
+        //       return this.updateDictionary();
+        //     }
 
-        return of(this.bookmarkedFilmsStore.getValue().bookmarks || {});
+        return this.store
+                   .select(selectAllBookmarks)
+                   .pipe(
+                     first(),
+                     switchMap((bookmarks: BookmarkedMediaDictionary | null) => {
+                       if (bookmarks == null) {
+                         // NOTE: technically, this is a correct piece of code
+                         // BUT I wouldn't recommend implementing it this way.
+                         return this.updateDictionary();
+                       }
+
+                       return this.store.select(selectAllBookmarksNotNull);
+                     })
+                   );
     }
 
     public add(kinopoiskId: string, bookmarkId: BookmarkEnum): Observable<unknown> {
       debugger;
         return this.bookmarkedFilmsApi.add(kinopoiskId, bookmarkId)
             .pipe(
-                tap(() => this.bookmarkedFilmsStore.add(kinopoiskId, bookmarkId)),
+                tap(() => this.store.dispatch(bookmarkAddedAction({kinopoiskId, bookmarkId}))),
             );
     }
 
@@ -44,7 +61,7 @@ export class BookmarkedFilmsService {
       debugger;
         return this.bookmarkedFilmsApi.remove(kinopoiskId, bookmarkId)
             .pipe(
-                tap(() => this.bookmarkedFilmsStore.remove(kinopoiskId, bookmarkId)),
+              tap(() => this.store.dispatch(bookmarkRemovedAction({kinopoiskId, bookmarkId}))),
             );
     }
 }
