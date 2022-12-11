@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core';
 import { DestroyService } from '@core/services';
 import { Bookmark, BookmarkEnum } from '@features/bookmark';
-import { BookmarkedFilmsService } from '@features/film';
+import { addBookmarkAction, loadBookmarksAction, removeBookmarkAction } from '@features/film/stores/bookmarked-films.actions';
 import { selectAllBookmarksNotNull } from '@features/film/stores/bookmarked-films.selectors';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { map, takeUntil } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { OpenedFilmState } from '../../states';
 
 @Component({
@@ -23,31 +23,20 @@ export class BookmarkButtonComponent implements OnInit {
     constructor(
         @Inject(DestroyService) private readonly viewDestroyed$: Observable<boolean>,
         private readonly openedFilmState: OpenedFilmState,
-        private readonly bookmarkedFilmsService: BookmarkedFilmsService,
         private readonly store: Store,
     ) {}
 
     public ngOnInit(): void {
         this.initBookmarksObservable();
-        this.updateBookmarkedFilmsDictionaryIfAbsent();
+        this.store.dispatch(loadBookmarksAction());
     }
 
     public onBookmarkSelected(bookmark: Bookmark): void {
-        this.bookmarkedFilmsService.add(this.openedFilmState.data!.kinopoiskId, bookmark.type)
-            .pipe(takeUntil(this.viewDestroyed$))
-            .subscribe();
+      this.store.dispatch(addBookmarkAction({kinopoiskId: this.openedFilmState.data!.kinopoiskId, bookmarkId: bookmark.type}));
     }
 
     public onBookmarkDeselected(bookmark: Bookmark): void {
-        this.bookmarkedFilmsService.remove(this.openedFilmState.data!.kinopoiskId, bookmark.type)
-            .pipe(takeUntil(this.viewDestroyed$))
-            .subscribe();
-    }
-
-    private updateBookmarkedFilmsDictionaryIfAbsent(): void {
-        this.bookmarkedFilmsService.updateDictionaryIfAbsent()
-            .pipe(takeUntil(this.viewDestroyed$))
-            .subscribe();
+      this.store.dispatch(removeBookmarkAction({kinopoiskId: this.openedFilmState.data!.kinopoiskId, bookmarkId: bookmark.type}));
     }
 
     private initBookmarksObservable(): void {

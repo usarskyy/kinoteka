@@ -5,6 +5,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CastManagerModule, MediaDownloadManagerModule } from '@components';
 import { LayoutsModule } from '@layouts';
+import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 import { SharedModule } from '@shared';
 import {
@@ -33,6 +34,7 @@ import { AppRoutingModule } from './app.routing';
         MediaDownloadManagerModule,
 
         StoreModule.forRoot({}),
+        EffectsModule.forRoot([]),
     ],
     providers: [
         {
