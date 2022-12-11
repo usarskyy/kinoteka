@@ -3,6 +3,7 @@ import { BookmarkedMediaDictionary } from '@core/interfaces';
 import { DestroyService } from '@core/services';
 import { Bookmark, BookmarkEnum } from '@features/bookmark';
 import { BookmarkedFilmsService, DownloadedFilm } from '@features/film';
+import { BookmarkedFilmsQuery } from '@features/film/stores/bookmarked-films.query';
 import { Observable } from 'rxjs';
 import { filter, map, takeUntil } from 'rxjs/operators';
 
@@ -23,7 +24,8 @@ export class BookmarkButtonComponent implements OnInit {
 
     constructor(
         @Inject(DestroyService) private readonly viewDestroyed$: Observable<boolean>,
-        private readonly bookmarkedFilmsService: BookmarkedFilmsService
+        private readonly bookmarkedFilmsService: BookmarkedFilmsService,
+        private readonly bookmarkedFilmsQuery: BookmarkedFilmsQuery
     ) {}
 
     public ngOnInit(): void {
@@ -50,7 +52,7 @@ export class BookmarkButtonComponent implements OnInit {
     }
 
     private initBookmarksObservable(): void {
-        this.bookmarks$ = this.bookmarkedFilmsService.data$
+        this.bookmarks$ = this.bookmarkedFilmsQuery.bookmarks$
             .pipe(
                 filter((data): data is BookmarkedMediaDictionary => !!data),
                 map((dictionary) => (dictionary[this.film.kinopoiskId] ?? []))

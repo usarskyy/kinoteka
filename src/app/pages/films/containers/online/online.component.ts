@@ -3,7 +3,8 @@ import { Router } from '@angular/router';
 import { AppRouteEnum } from '@core/enums';
 import { BookmarkedMediaDictionary } from '@core/interfaces';
 import { DestroyService } from '@core/services';
-import { BookmarkedFilmsService, Film, OnlineFilmsFiltersService, OnlineFilmsService } from '@features/film';
+import { Film, OnlineFilmsFiltersService, OnlineFilmsService } from '@features/film';
+import { BookmarkedFilmsQuery } from '@features/film/stores/bookmarked-films.query';
 import { VideoCdnResponse } from '@features/video-cdn';
 import { ContentZoneService, HeaderService } from '@layouts';
 import { WatchRoutingEnum } from '@pages/watch/enums';
@@ -22,7 +23,7 @@ import { HeaderPortalContentComponent } from './header-portal-content';
 export class OnlineComponent implements OnInit {
     public filmsResponse: VideoCdnResponse<Film> | null = null;
 
-    public bookmarkedFilmsDictionary$!: Observable<BookmarkedMediaDictionary | null>;
+    public bookmarkedFilmsDictionary$: Observable<BookmarkedMediaDictionary | null> = this.bookmarkedFilmsQuery.bookmarks$;
 
     private get viewDestroyedOrFiltersChanged$(): Observable<unknown> {
         return merge(
@@ -39,13 +40,11 @@ export class OnlineComponent implements OnInit {
         private readonly headerService: HeaderService,
         private readonly filmsService: OnlineFilmsService,
         private readonly filmsFiltersService: OnlineFilmsFiltersService,
-        private readonly bookmarkedFilmsService: BookmarkedFilmsService,
+        private readonly bookmarkedFilmsQuery: BookmarkedFilmsQuery,
         private readonly changeDetector: ChangeDetectorRef
     ) {}
 
     public ngOnInit(): void {
-        this.bookmarkedFilmsDictionary$ = this.bookmarkedFilmsService.data$;
-
         this.headerService.setPortalComponent(HeaderPortalContentComponent);
         this.updateFilms();
         this.initFilmsFiltersObserver();
