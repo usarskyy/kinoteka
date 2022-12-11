@@ -3,10 +3,9 @@ import { DestroyService } from '@core/services';
 import { Bookmark, BookmarkEnum } from '@features/bookmark';
 import { DownloadedFilm } from '@features/film';
 import { addBookmarkAction, loadBookmarksAction, removeBookmarkAction } from '@features/film/stores/bookmarked-films.actions';
-import { selectAllBookmarksNotNull } from '@features/film/stores/bookmarked-films.selectors';
+import { selectAllBookmarksForKinopoiskId } from '@features/film/stores/bookmarked-films.selectors';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 
 @Component({
     selector: 'app-bookmark-button',
@@ -42,9 +41,6 @@ export class BookmarkButtonComponent implements OnInit {
     }
 
     private initBookmarksObservable(): void {
-        this.bookmarks$ = this.store.select(selectAllBookmarksNotNull)
-            .pipe(
-                map((dictionary) => (dictionary[this.film.kinopoiskId] ?? []))
-            );
+        this.bookmarks$ = this.store.select(selectAllBookmarksForKinopoiskId(this.film.kinopoiskId));
     }
 }

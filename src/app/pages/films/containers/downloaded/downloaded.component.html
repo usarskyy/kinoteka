@@ -1,37 +1,48 @@
-<ng-container *ngIf="(filteredFilms$ | async) as filteredFilms; else loaderTemplate">
-    <app-title>
-        <span
-            [matBadge]="(allDownloadedFilms$ | async)?.length"
-            [matBadgeOverlap]="false"
-            [matBadgeHidden]="!(allDownloadedFilms$ | async)?.length">
-            Завантажені
-        </span>
-    </app-title>
+<ng-container *ngIf="isLoaded$ | async">
 
-    <ng-container *ngIf="(bookmarkedFilmsDictionary$ | async) as bookmarkedFilmsDictionary">
-        <ng-container *ngIf="filteredFilms.length; else emptyContentTemplate">
-            <div class="container">
-                <div class="row">
-                    <div
-                        *ngFor="let film of filteredFilms"
-                        class="col-xs-12 col-sm-6 col-sm-6 col-xxl-4">
-                        <app-downloaded-film-card
-                            [film]="film"
-                            [bookmarks]="bookmarkedFilmsDictionary[film.kinopoiskId]"
-                            (click)="onFilmClick(film)">
-                        </app-downloaded-film-card>
-                    </div>
-                </div>
-            </div>
+  <!-- Nested ngIf-s are not advised if you use them as a variable declaration. -->
+  <!-- Create an observable that combines multiple sources and use either one ngIf, -->
+  <!-- or something like 'rxLet' (https://www.rx-angular.io/docs/template/api/let-directive) -->
+  <ng-container *ngIf="(filteredFilms$ | async) as filteredFilms">
+      <app-title>
+          <span
+              [matBadge]="(allDownloadedFilms$ | async)?.length"
+              [matBadgeOverlap]="false"
+              [matBadgeHidden]="!(allDownloadedFilms$ | async)?.length">
+              Завантажені
+          </span>
+      </app-title>
 
-            <app-paginator></app-paginator>
-        </ng-container>
-    </ng-container>
+      <ng-container *ngIf="(bookmarkedFilmsDictionary$ | async) as bookmarkedFilmsDictionary">
+          <ng-container *ngIf="filteredFilms.length; else emptyContentTemplate">
+              <div class="container">
+                  <div class="row">
+                      <div
+                          *ngFor="let film of filteredFilms"
+                          class="col-xs-12 col-sm-6 col-sm-6 col-xxl-4">
+                          <app-downloaded-film-card
+                              [film]="film"
+                              [bookmarks]="bookmarkedFilmsDictionary[film.kinopoiskId]"
+                              (click)="onFilmClick(film)">
+                          </app-downloaded-film-card>
+                      </div>
+                  </div>
+              </div>
+
+              <app-paginator></app-paginator>
+          </ng-container>
+      </ng-container>
+  </ng-container>
 </ng-container>
 
-<ng-template #loaderTemplate>
-    <app-loader></app-loader>
-</ng-template>
+<!-- NOTE: showing loader on every page is not advised. Your teammates will hunt you down for this. -->
+<!-- Usually you have a service that controls visibility of a blocking modal located in the root component. -->
+<!-- When you need to block a window, you simply notify this service and it does everything for you. -->
+<app-loader *ngIf="isLoading$ | async"></app-loader>
+
+<div style="color: red;" *ngIf="isError$ | async">
+  Failed to load bookmarks. Get back to work!
+</div>
 
 <ng-template #emptyContentTemplate>
     <app-subtitle>

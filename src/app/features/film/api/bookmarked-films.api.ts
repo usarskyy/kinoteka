@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BookmarkedMediaDictionary } from '@core/interfaces';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, delay, Observable, of, tap } from 'rxjs';
 import { BookmarkEnum } from '../../bookmark';
 
 @Injectable({
@@ -11,7 +11,16 @@ export class BookmarkedFilmsApi {
     private readonly data$ = new BehaviorSubject<BookmarkedMediaDictionary>({});
 
     public getAsDictionary(): Observable<BookmarkedMediaDictionary> {
-        return of(this.data$.value);
+        return of(this.data$.value)
+          .pipe(
+            delay(1000),
+            tap((x) => {
+              // @ts-ignore
+              if (window['fail_getAsDictionary'] === true) {
+                throw new Error('Service overloaded');
+              }
+            })
+          );
     }
 
     public add(kinopoiskId: string, bookmarkId: BookmarkEnum): Observable<unknown> {

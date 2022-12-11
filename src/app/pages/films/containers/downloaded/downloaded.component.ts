@@ -4,7 +4,7 @@ import { AppRouteEnum } from '@core/enums';
 import { BookmarkedMediaDictionary } from '@core/interfaces';
 import { DestroyService } from '@core/services';
 import { DownloadedFilm, DownloadedFilmsService, DOWNLOADED_FILM_PREVIEW_LOADER, FilteredDownloadedFilmsService } from '@features/film';
-import { selectAllBookmarksNotNull } from '@features/film/stores/bookmarked-films.selectors';
+import { isErrored, isLoaded, isLoading, selectLoadedBookmarks } from '@features/film/stores/bookmarked-films.selectors';
 import { DownloadingMediaSocketService, MediaTypeEnum } from '@features/media';
 import { ContentZoneService, HeaderService } from '@layouts';
 import { Store } from '@ngrx/store';
@@ -29,7 +29,10 @@ import { HeaderPortalContentComponent } from './header-portal-content';
 export class DownloadedComponent implements OnInit, OnDestroy {
     public filteredFilms$!: Observable<DownloadedFilm[]>;
     public allDownloadedFilms$!: Observable<DownloadedFilm[] | null>;
-    public bookmarkedFilmsDictionary$: Observable<BookmarkedMediaDictionary> = this.store.select(selectAllBookmarksNotNull);
+    public bookmarkedFilmsDictionary$: Observable<BookmarkedMediaDictionary> = this.store.pipe(selectLoadedBookmarks);
+    public isLoaded$ = this.store.select(isLoaded);
+    public isLoading$ = this.store.select(isLoading);
+    public isError$ = this.store.select(isErrored);
 
     constructor(
         @Inject(DestroyService) private readonly viewDestroyed$: Observable<void>,

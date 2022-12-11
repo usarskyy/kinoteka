@@ -1,37 +1,72 @@
 ﻿import { BookmarkedMediaDictionary } from '@core/interfaces';
-import { bookmarkAddedAction, bookmarkRemovedAction, bookmarksLoadedAction } from './bookmarked-films.actions';
+import { BookmarkedFilmsState } from './bookmarked-films.state';
+import { addBookmarkCompletedAction, loadBookmarksAction, loadBookmarksCompletedAction, removeBookmarkCompletedAction } from './bookmarked-films.actions';
 import { createReducer, on } from '@ngrx/store';
 
+export const bookmarksReducer = createReducer<BookmarkedFilmsState>(
+  {status: 'empty', bookmarks: {}},
 
-// Here it gets a bit weird. Unfortunately because of the backward compatibility I have to use 'BookmarkedMediaDictionary | null'.
-// I would prefer to have a separate type with a property 'bookmarks' to make this state easily extensible
-// and avoid problems with null values.
+  on(loadBookmarksAction, (state) => {
 
-export const bookmarksReducer = createReducer<BookmarkedMediaDictionary | null>(
-  null,
-
-  on(bookmarksLoadedAction, (state, payload) => payload),
-
-  on(bookmarkAddedAction, (state, payload) => {
-
-    const allBookmarks: BookmarkedMediaDictionary = {...(state || {})};
-
-    allBookmarks[payload.kinopoiskId] = [...(allBookmarks[payload.kinopoiskId] || []), payload.bookmarkId];
-
-    return allBookmarks;
-  }),
-
-  on(bookmarkRemovedAction, (state, payload) => {
-
-    const notNullState: BookmarkedMediaDictionary = {...(state || {})};
-    const userBookmarks = notNullState[payload.kinopoiskId];
-
-    if (userBookmarks) {
-      notNullState[payload.kinopoiskId] = userBookmarks.filter(b => b !== payload.bookmarkId);
-
-      return notNullState;
+    if (state.status === 'loaded') {
+      return state;
     }
 
-    return state;
+    return {...state, status: 'loading'};
+  }),
+
+  on(loadBookmarksCompletedAction, (state, payload) => {
+    switch (payload.status) {
+      case 'success':
+        return {...state, bookmarks: payload.bookmarks, status: 'loaded'};
+
+      case 'error':
+        return {...state, status: 'errored'};
+
+      default:
+        throw new Error(`Unknown action status: ${JSON.stringify(payload)}`);
+    }
+  }),
+
+  on(addBookmarkCompletedAction, (state, payload) => {
+    switch (payload.status) {
+      case 'success':
+        const newBookmarks: BookmarkedMediaDictionary = {...state.bookmarks};
+
+        newBookmarks[payload.kinopoiskId] = [...(state.bookmarks[payload.kinopoiskId] || []), payload.bookmarkId];
+
+        return {...state, bookmarks: newBookmarks};
+
+      case 'error':
+        // TODO: log, show alert or do something else
+        throw new Error('NOT IMPLEMENTED');
+
+      default:
+        throw new Error(`Unknown action status: ${JSON.stringify(payload)}`);
+    }
+  }),
+
+  on(removeBookmarkCompletedAction, (state, payload) => {
+
+    switch (payload.status) {
+      case 'success':
+        const newBookmarks: BookmarkedMediaDictionary = {...state.bookmarks};
+        const userBookmarks = state.bookmarks[payload.kinopoiskId];
+
+        if (userBookmarks) {
+          newBookmarks[payload.kinopoiskId] = userBookmarks.filter(b => b !== payload.bookmarkId);
+
+          return {...state, bookmarks: newBookmarks};
+        }
+
+        return state;
+
+      case 'error':
+        // TODO: log, show alert or do something else
+        throw new Error('NOT IMPLEMENTED');
+
+      default:
+        throw new Error(`Unknown action status: ${JSON.stringify(payload)}`);
+    }
   }),
 );

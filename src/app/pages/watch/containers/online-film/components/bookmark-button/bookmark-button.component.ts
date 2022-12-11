@@ -2,10 +2,9 @@ import { ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/cor
 import { DestroyService } from '@core/services';
 import { Bookmark, BookmarkEnum } from '@features/bookmark';
 import { addBookmarkAction, loadBookmarksAction, removeBookmarkAction } from '@features/film/stores/bookmarked-films.actions';
-import { selectAllBookmarksNotNull } from '@features/film/stores/bookmarked-films.selectors';
+import { selectAllBookmarksForKinopoiskId } from '@features/film/stores/bookmarked-films.selectors';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { OpenedFilmState } from '../../states';
 
 @Component({
@@ -40,9 +39,6 @@ export class BookmarkButtonComponent implements OnInit {
     }
 
     private initBookmarksObservable(): void {
-        this.bookmarks$ = this.store.select(selectAllBookmarksNotNull)
-            .pipe(
-                map((dictionary) => (dictionary[this.openedFilmState.data!.kinopoiskId] ?? []))
-            );
+        this.bookmarks$ = this.store.select(selectAllBookmarksForKinopoiskId(this.openedFilmState.data!.kinopoiskId));
     }
 }

@@ -2,16 +2,15 @@
 import { BookmarkedFilmsApi } from '@features/film/api';
 import {
   addBookmarkAction,
-  bookmarkAddedAction,
-  bookmarkRemovedAction,
-  bookmarksLoadedAction,
-  loadBookmarksAction,
-  removeBookmarkAction
-} from '@features/film/stores/bookmarked-films.actions';
-import { selectAllBookmarks } from '@features/film/stores/bookmarked-films.selectors';
+  addBookmarkCompletedAction,
+  loadBookmarksCompletedAction,
+  removeBookmarkAction,
+  removeBookmarkCompletedAction,
+} from './bookmarked-films.actions';
+import { isLoaded } from './bookmarked-films.selectors';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { filter, map, mergeMap, of, switchMap, tap } from 'rxjs';
+import { catchError, filter, map, mergeMap, of, switchMap } from 'rxjs';
 
 @Injectable()
 export class BookmarkedFilmsEffects {
@@ -31,37 +30,36 @@ export class BookmarkedFilmsEffects {
                                     return this.bookmarkedFilmsApi
                                                .add(payload.kinopoiskId, payload.bookmarkId)
                                                .pipe(
-                                                 map(() => bookmarkAddedAction(payload)),
-                                                 //catchError(() => of(...))
+                                                 map(() => addBookmarkCompletedAction({...payload, status: 'success'})),
+                                                 catchError(() => of(addBookmarkCompletedAction({status: 'error'})))
                                                );
                                   })
                                 ));
 
   removeBookmark$ = createEffect(() =>
-                                this.actions$.pipe(
-                                  ofType(removeBookmarkAction),
-                                  mergeMap((payload) => {
+                                   this.actions$.pipe(
+                                     ofType(removeBookmarkAction),
+                                     mergeMap((payload) => {
 
-                                    return this.bookmarkedFilmsApi
-                                               .add(payload.kinopoiskId, payload.bookmarkId)
-                                               .pipe(
-                                                 map(() => bookmarkRemovedAction(payload)),
-                                                 //catchError(() => of(...))
-                                               );
-                                  })
-                                ));
+                                       return this.bookmarkedFilmsApi
+                                                  .add(payload.kinopoiskId, payload.bookmarkId)
+                                                  .pipe(
+                                                    map(() => removeBookmarkCompletedAction({...payload, status: 'success'})),
+                                                    catchError(() => of(removeBookmarkCompletedAction({status: 'error'})))
+                                                  );
+                                     })
+                                   ));
 
   loadBookmarks$ = createEffect(() =>
                                   this.actions$.pipe(
-                                    ofType(loadBookmarksAction),
-                                    mergeMap(() => this.store.select(selectAllBookmarks)),
-                                    filter(x => x == null),
-                                    switchMap((existingBookmarks) => {
+                                    mergeMap(() => this.store.select(isLoaded)),
+                                    filter(x => x === false),
+                                    switchMap(() => {
                                       return this.bookmarkedFilmsApi
                                                  .getAsDictionary()
                                                  .pipe(
-                                                   map(data => bookmarksLoadedAction(data)),
-                                                   //catchError(() => of(...))
+                                                   map(data => loadBookmarksCompletedAction({status: 'success', bookmarks: data})),
+                                                   catchError(() => of(loadBookmarksCompletedAction({status: 'error'})))
                                                  );
                                     })
                                   ));
