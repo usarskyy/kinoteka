@@ -33,7 +33,17 @@ import { AppRoutingModule } from './app.routing';
         CastManagerModule,
         MediaDownloadManagerModule,
 
-        StoreModule.forRoot({}),
+        StoreModule.forRoot({}, {
+          // https://ngrx.io/guide/store/configuration/runtime-checks
+          runtimeChecks: {
+            strictStateImmutability: true,
+            strictActionImmutability: true,
+            strictStateSerializability: true,
+            strictActionSerializability: true,
+            strictActionWithinNgZone: true,
+            strictActionTypeUniqueness: true,
+          },
+        }),
         EffectsModule.forRoot([]),
     ],
     providers: [
