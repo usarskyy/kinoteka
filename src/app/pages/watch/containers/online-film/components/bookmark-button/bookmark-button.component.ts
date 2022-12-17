@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core';
 import { DestroyService } from '@core/services';
 import { Bookmark, BookmarkEnum } from '@features/bookmark';
-import { addBookmarkAction, loadBookmarksAction, removeBookmarkAction } from '@features/film/stores/bookmarked-films.actions';
+import { FilmBookmarkActions } from '@features/film/stores/bookmarked-films.actions';
 import { selectAllBookmarksForKinopoiskId } from '@features/film/stores/bookmarked-films.selectors';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
@@ -27,15 +27,15 @@ export class BookmarkButtonComponent implements OnInit {
 
     public ngOnInit(): void {
         this.initBookmarksObservable();
-        this.store.dispatch(loadBookmarksAction());
+        this.store.dispatch(FilmBookmarkActions.loadBookmarks());
     }
 
     public onBookmarkSelected(bookmark: Bookmark): void {
-      this.store.dispatch(addBookmarkAction({kinopoiskId: this.openedFilmState.data!.kinopoiskId, bookmarkId: bookmark.type}));
+      this.store.dispatch(FilmBookmarkActions.addBookmark({kinopoiskId: this.openedFilmState.data!.kinopoiskId, bookmarkId: bookmark.type}));
     }
 
     public onBookmarkDeselected(bookmark: Bookmark): void {
-      this.store.dispatch(removeBookmarkAction({kinopoiskId: this.openedFilmState.data!.kinopoiskId, bookmarkId: bookmark.type}));
+      this.store.dispatch(FilmBookmarkActions.removeBookmark({kinopoiskId: this.openedFilmState.data!.kinopoiskId, bookmarkId: bookmark.type}));
     }
 
     private initBookmarksObservable(): void {

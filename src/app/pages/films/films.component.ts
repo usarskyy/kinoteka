@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core';
 import { DestroyService } from '@core/services';
-import { loadBookmarksAction } from '@features/film/stores/bookmarked-films.actions';
+import { FilmBookmarkActions } from '@features/film/stores/bookmarked-films.actions';
 import { Store } from '@ngrx/store';
-import { Observable, takeUntil } from 'rxjs';
+import { Observable } from 'rxjs';
 
 @Component({
     selector: 'app-films',
@@ -20,7 +20,7 @@ export class FilmsComponent implements OnInit {
     ) {}
 
     public ngOnInit(): void {
-        this.store.dispatch(loadBookmarksAction());
+        this.store.dispatch(FilmBookmarkActions.loadBookmarks());
 
         // this.updateBookmarkedFilmsDictionaryIfAbsent();
     }

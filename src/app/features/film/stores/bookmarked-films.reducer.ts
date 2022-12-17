@@ -1,6 +1,6 @@
 ﻿import { BookmarkedMediaDictionary } from '@core/interfaces';
 import { BookmarkedFilmsState } from './bookmarked-films.state';
-import { addBookmarkCompletedAction, loadBookmarksAction, loadBookmarksCompletedAction, removeBookmarkCompletedAction } from './bookmarked-films.actions';
+import { FilmBookmarkActions } from './bookmarked-films.actions';
 import { createFeature, createReducer, on } from '@ngrx/store';
 
 // https://ngrx.io/guide/store/feature-creators#restrictions
@@ -10,7 +10,7 @@ export const filmsFeature = createFeature(
     reducer: createReducer<BookmarkedFilmsState>(
       {status: 'empty', bookmarks: {}},
 
-      on(loadBookmarksAction, (state) => {
+      on(FilmBookmarkActions.loadBookmarks, (state) => {
 
         if (state.status === 'loaded') {
           return state;
@@ -19,7 +19,7 @@ export const filmsFeature = createFeature(
         return {...state, status: 'loading'};
       }),
 
-      on(loadBookmarksCompletedAction, (state, payload) => {
+      on(FilmBookmarkActions.loadBookmarksCompleted, (state, payload) => {
         switch (payload.status) {
           case 'success':
             return {...state, bookmarks: payload.bookmarks, status: 'loaded'};
@@ -32,7 +32,7 @@ export const filmsFeature = createFeature(
         }
       }),
 
-      on(addBookmarkCompletedAction, (state, payload) => {
+      on(FilmBookmarkActions.addBookmarkCompleted, (state, payload) => {
         switch (payload.status) {
           case 'success':
             const newBookmarks: BookmarkedMediaDictionary = {...state.bookmarks};
@@ -50,7 +50,7 @@ export const filmsFeature = createFeature(
         }
       }),
 
-      on(removeBookmarkCompletedAction, (state, payload) => {
+      on(FilmBookmarkActions.removeBookmarkCompleted, (state, payload) => {
 
         switch (payload.status) {
           case 'success':

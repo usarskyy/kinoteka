@@ -1,12 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { BookmarkedFilmsApi } from '@features/film/api';
-import {
-  addBookmarkAction,
-  addBookmarkCompletedAction,
-  loadBookmarksCompletedAction,
-  removeBookmarkAction,
-  removeBookmarkCompletedAction,
-} from './bookmarked-films.actions';
+import { FilmBookmarkActions } from './bookmarked-films.actions';
 import { isLoaded } from './bookmarked-films.selectors';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
@@ -24,42 +18,43 @@ export class BookmarkedFilmsEffects {
 
   addBookmark$ = createEffect(() =>
                                 this.actions$.pipe(
-                                  ofType(addBookmarkAction),
+                                  ofType(FilmBookmarkActions.addBookmark),
                                   mergeMap((payload) => {
 
                                     return this.bookmarkedFilmsApi
                                                .add(payload.kinopoiskId, payload.bookmarkId)
                                                .pipe(
-                                                 map(() => addBookmarkCompletedAction({...payload, status: 'success'})),
-                                                 catchError(() => of(addBookmarkCompletedAction({status: 'error'})))
+                                                 map(() => FilmBookmarkActions.addBookmarkCompleted({ ...payload, status: 'success' })),
+                                                 catchError(() => of(FilmBookmarkActions.addBookmarkCompleted({ status: 'error' }))),
                                                );
                                   })
                                 ));
 
   removeBookmark$ = createEffect(() =>
                                    this.actions$.pipe(
-                                     ofType(removeBookmarkAction),
+                                     ofType(FilmBookmarkActions.removeBookmark),
                                      mergeMap((payload) => {
 
                                        return this.bookmarkedFilmsApi
                                                   .add(payload.kinopoiskId, payload.bookmarkId)
                                                   .pipe(
-                                                    map(() => removeBookmarkCompletedAction({...payload, status: 'success'})),
-                                                    catchError(() => of(removeBookmarkCompletedAction({status: 'error'})))
+                                                    map(() => FilmBookmarkActions.removeBookmarkCompleted({ ...payload, status: 'success' })),
+                                                    catchError(() => of(FilmBookmarkActions.removeBookmarkCompleted({ status: 'error' })))
                                                   );
                                      })
                                    ));
 
   loadBookmarks$ = createEffect(() =>
                                   this.actions$.pipe(
+                                    ofType(FilmBookmarkActions.loadBookmarks),
                                     mergeMap(() => this.store.select(isLoaded)),
                                     filter(x => x === false),
                                     switchMap(() => {
                                       return this.bookmarkedFilmsApi
                                                  .getAsDictionary()
                                                  .pipe(
-                                                   map(data => loadBookmarksCompletedAction({status: 'success', bookmarks: data})),
-                                                   catchError(() => of(loadBookmarksCompletedAction({status: 'error'})))
+                                                   map(data => FilmBookmarkActions.loadBookmarksCompleted({ status: 'success', bookmarks: data })),
+                                                   catchError(() => of(FilmBookmarkActions.loadBookmarksCompleted({ status: 'error' })))
                                                  );
                                     })
                                   ));
