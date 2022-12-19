@@ -1,4 +1,6 @@
-<ng-container *ngIf="(filteredFilms$ | async) as filteredFilms; else loaderTemplate">
+{{filteredFilms$ | async | json}}
+
+<ng-container *ngIf="(filteredFilmsWithLongerDuration$ | async) as filteredFilms; else loaderTemplate">
     <app-title>
         <span
             [matBadge]="(allDownloadedFilms$ | async)?.length"

@@ -8,6 +8,7 @@ import { DownloadingMediaSocketService, MediaTypeEnum } from '@features/media';
 import { ContentZoneService, HeaderService } from '@layouts';
 import { WatchRoutingEnum } from '@pages/watch/enums';
 import { filter, merge, Observable, switchMap, takeUntil } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { DownloadedFilmPreviewLoaderService } from './downloaded-film-preview-loader.service';
 import { HeaderPortalContentComponent } from './header-portal-content';
 
@@ -26,6 +27,7 @@ import { HeaderPortalContentComponent } from './header-portal-content';
 })
 export class DownloadedComponent implements OnInit, OnDestroy {
     public filteredFilms$!: Observable<DownloadedFilm[]>;
+    public filteredFilmsWithLongerDuration$!: Observable<DownloadedFilm[]>;
     public allDownloadedFilms$!: Observable<DownloadedFilm[] | null>;
     public bookmarkedFilmsDictionary$!: Observable<BookmarkedMediaDictionary | null>;
 
@@ -42,6 +44,29 @@ export class DownloadedComponent implements OnInit, OnDestroy {
 
     public ngOnInit(): void {
         this.filteredFilms$ = this.filteredDownloadedFilmsService.data$;
+
+      // NEW WEIRD REQUIREMENT:
+      // marketing guys would like to update the duration in order
+      // to have better looking list, this should theoretically increase sales.
+        this.filteredFilmsWithLongerDuration$ = this.filteredDownloadedFilmsService
+                                                    .data$
+                                                    .pipe(
+                                                      map(data => {
+                                                        return data.map(film => {
+                                                          // cloned an original object
+                                                          const longerDuration = { ...film };
+
+                                                          // can you spot the problem here?
+                                                          if (longerDuration.media.duration < 500) {
+                                                            console.log(`Updated ${film.title}. Original value: ${longerDuration.media.duration}`);
+
+                                                            longerDuration.media.duration = 500;
+                                                          }
+
+                                                          return longerDuration;
+                                                        });
+                                                      })
+                                                    );
         this.allDownloadedFilms$ = this.downloadedFilmsService.data$;
         this.bookmarkedFilmsDictionary$ = this.bookmarkedFilmsService.data$;
 
