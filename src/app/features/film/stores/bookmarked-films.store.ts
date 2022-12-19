@@ -17,6 +17,8 @@ export interface BookmarkedFilmsState {
 @StoreConfig({name: 'bookmarked-media'})
 export class BookmarkedFilmsStore extends Store<BookmarkedFilmsState> {
 
+  public readonly state$ = this._select(x => x);
+
   constructor() {
     super({bookmarks: null});
   }

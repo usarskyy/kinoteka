@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BookmarkedMediaDictionary } from '@core/interfaces';
-import { BookmarkedFilmsQuery } from '@features/film/stores/bookmarked-films.query';
 import { BookmarkedFilmsStore } from '@features/film/stores/bookmarked-films.store';
 import { Observable, of, tap } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { BookmarkEnum } from '../../bookmark';
 import { BookmarkedFilmsApi } from '../api';
 
@@ -11,12 +11,11 @@ import { BookmarkedFilmsApi } from '../api';
 })
 export class BookmarkedFilmsService {
 
-    public readonly data$ = this.bookmarkedFilmsQuery.select(x => x.bookmarks || {});
+    public readonly data$ = this.bookmarkedFilmsStore.state$.pipe(map(x => x.bookmarks || {}));
 
     constructor(
         private readonly bookmarkedFilmsApi: BookmarkedFilmsApi,
-        private readonly bookmarkedFilmsStore: BookmarkedFilmsStore,
-        private readonly bookmarkedFilmsQuery: BookmarkedFilmsQuery
+        private readonly bookmarkedFilmsStore: BookmarkedFilmsStore
     ) {
     }
 
