@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BookmarkedMediaDictionary } from '@core/interfaces';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, delay, Observable, tap } from 'rxjs';
 import { BookmarkEnum } from '../../bookmark';
 import { BookmarkedFilmsApi } from '../api';
 
@@ -26,6 +26,8 @@ export class BookmarkedFilmsService {
     public updateDictionary(): Observable<BookmarkedMediaDictionary> {
         return this.bookmarkedFilmsApi.getAsDictionary()
             .pipe(
+                tap(() => console.log('LOADING DATA...')),
+                delay(1000),
                 tap((data) => this.state$.next(data))
             );
     }
